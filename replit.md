@@ -60,7 +60,7 @@ Includes a full admin dashboard and a developer self-service portal, with Arabic
 
 ---
 
-## Live Models (23)
+## Live Models (25)
 
 ### Google — Gemini 2.5
 - `gemini-2.5-pro` ($1.25/$10.00 per 1M in/out)
@@ -73,9 +73,8 @@ Includes a full admin dashboard and a developer self-service portal, with Arabic
 - `gemini-3.1-flash-image-preview` ($0.50/$3.00)
 
 ### Google — Gemini 3.0
-- `gemini-3.0-pro-preview` ($2.00/$12.00)
-- `gemini-3.0-flash-preview` ($0.50/$3.00)
 - `gemini-3.0-pro-image-preview` ($2.00/$12.00)
+- `gemini-3.0-flash-preview` ($0.50/$3.00)
 
 ### Google — Imagen (image generation)
 - `imagen-4.0-generate-001` ($0.04/img) · `imagen-4.0-ultra-generate-001` ($0.06/img)
@@ -85,15 +84,14 @@ Includes a full admin dashboard and a developer self-service portal, with Arabic
 - `veo-3.1-generate-001` ($0.40/s) · `veo-3.1-fast-generate-001` ($0.12/s)
 - `veo-3.0-generate-001` ($0.40/s) · `veo-2.0-generate-001` ($0.50/s)
 
-### Partners (6 live)
+### Partners (8 live)
 - xAI: `grok-4.20`, `grok-4.1-thinking`
 - DeepSeek: `deepseek-v3.2`
 - Google MaaS: `gemma-4-26b`
 - Kimi: `kimi-k2`
 - MiniMax: `minimax-m2`
-
-### Coming Soon (19 — comingSoon: true in models.ts, no API routing)
-Grok 4.1 Fast · Mistral (7) · DeepSeek R1 (4) · GLM-5/5.1 · Llama 4/3.3 · GPT-OSS 120B · Qwen3 235B
+- Zhipu AI: `glm-5` (via Vertex AI MaaS, global endpoint)
+- Mistral AI: `mistral-small` (Mistral Small 3.1 via Vertex AI rawPredict)
 
 ---
 
@@ -247,6 +245,15 @@ Do **not** hardcode any payment credentials. Always store them as Replit Secrets
 ---
 
 ## Recent Changes (Apr 2026)
+
+### Session 8 — Model Descriptions, Use Cases & Sorting in Docs
+
+- **Model descriptions** (`artifacts/dashboard/src/pages/portal/Docs.tsx`): Every model in the docs now has a full English description explaining its strengths, plus use-case tags (e.g. "Complex reasoning", "Code generation", "Multilingual").
+- **Quality score column**: A 5-dot visual indicator beside each model reflects its quality tier — more filled dots = better model.
+- **Sort controls**: 4 sort buttons above the models table — **Default** (grouped by provider) · **Best first** (quality rank) · **Cheapest** (price ascending) · **Priciest** (price descending). Sorted views show a flat list across all providers.
+- **Expandable rows**: Each model row has a `▾` toggle that reveals the description and use-case tags inline, keeping the table compact by default.
+- **Live model count updated to 25**: Added `glm-5` (Zhipu AI via Vertex MaaS) and `mistral-small` (Mistral Small 3.1 via Vertex rawPredict) to the docs model catalog — both now fully routed and live.
+- **replit.md updated**: Live model count, partner list, and key files section updated to reflect current state.
 
 ### Session 7 — VPS Deployment Hardening + Production SSL Fix
 

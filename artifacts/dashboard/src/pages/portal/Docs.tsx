@@ -3,7 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Copy, CheckCircle2, ShieldAlert, FileWarning, Ban, AlertTriangle } from "lucide-react";
+import {
+  Copy, CheckCircle2, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp,
+} from "lucide-react";
 import { useState, Fragment } from "react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -44,14 +46,20 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
 interface ModelRow {
   id: string;
   alias?: string;
-  type: string;
+  type: "Text" | "Image" | "Video";
   pricing: string;
+  description: string;
+  useCases: string[];
+  quality: number;
+  sortPrice: number;
 }
 
 interface ModelSection {
   label: string;
   models: ModelRow[];
 }
+
+type SortMode = "default" | "quality" | "price-asc" | "price-desc";
 
 function ModelIdCell({ id, alias }: { id: string; alias?: string }) {
   const [copied, setCopied] = useState(false);
@@ -91,84 +99,382 @@ const MODEL_SECTIONS: ModelSection[] = [
   {
     label: "Google — Gemini 2.5",
     models: [
-      { id: "gemini-2.5-pro",        type: "Text", pricing: "$1.25 / $10.00 per 1M tokens (in/out)" },
-      { id: "gemini-2.5-flash",      type: "Text", pricing: "$0.30 / $2.50 per 1M tokens (in/out)"  },
-      { id: "gemini-2.5-flash-lite", type: "Text", pricing: "$0.10 / $0.40 per 1M tokens (in/out)"  },
+      {
+        id: "gemini-2.5-pro",
+        type: "Text",
+        pricing: "$1.25 / $10.00 per 1M tokens (in/out)",
+        description: "Google's most capable Gemini 2.5 model. Excels at complex reasoning, long-context documents, coding, and multimodal tasks.",
+        useCases: ["Complex reasoning", "Code generation", "Long documents", "Multimodal"],
+        quality: 6,
+        sortPrice: 1.25,
+      },
+      {
+        id: "gemini-2.5-flash",
+        type: "Text",
+        pricing: "$0.30 / $2.50 per 1M tokens (in/out)",
+        description: "Fast and highly capable Gemini 2.5 model. Best balance of speed, quality, and cost for everyday production workloads.",
+        useCases: ["Chat", "Summarization", "Q&A", "Translation"],
+        quality: 15,
+        sortPrice: 0.30,
+      },
+      {
+        id: "gemini-2.5-flash-lite",
+        type: "Text",
+        pricing: "$0.10 / $0.40 per 1M tokens (in/out)",
+        description: "Lightest and fastest Gemini 2.5 model. Ideal for simple, high-volume tasks where speed and cost matter most.",
+        useCases: ["Classification", "Simple Q&A", "High-volume tasks"],
+        quality: 17,
+        sortPrice: 0.10,
+      },
     ],
   },
   {
     label: "Google — Gemini 3.1",
     models: [
-      { id: "gemini-3.1-pro-preview",         type: "Text", pricing: "$2.00 / $12.00 per 1M tokens (in/out)" },
-      { id: "gemini-3.1-flash-lite-preview",  type: "Text", pricing: "$0.25 / $1.50 per 1M tokens (in/out)"  },
-      { id: "gemini-3.1-flash-image-preview", type: "Text", pricing: "$0.50 / $3.00 per 1M tokens (in/out)"  },
+      {
+        id: "gemini-3.1-pro-preview",
+        type: "Text",
+        pricing: "$2.00 / $12.00 per 1M tokens (in/out)",
+        description: "Google's latest and most powerful model. State-of-the-art reasoning, vision understanding, and code generation capabilities.",
+        useCases: ["Research", "Complex reasoning", "Vision", "Advanced coding"],
+        quality: 1,
+        sortPrice: 2.00,
+      },
+      {
+        id: "gemini-3.1-flash-lite-preview",
+        type: "Text",
+        pricing: "$0.25 / $1.50 per 1M tokens (in/out)",
+        description: "Ultra-fast lightweight Gemini 3.1 model. Best for real-time applications requiring Gemini 3.1 generation quality at low latency.",
+        useCases: ["Real-time apps", "Chatbots", "Simple tasks"],
+        quality: 11,
+        sortPrice: 0.25,
+      },
+      {
+        id: "gemini-3.1-flash-image-preview",
+        type: "Text",
+        pricing: "$0.50 / $3.00 per 1M tokens (in/out)",
+        description: "Gemini 3.1 Flash with native image generation support. Create images and text in the same model call.",
+        useCases: ["Creative content", "Image + text generation", "Visual storytelling"],
+        quality: 10,
+        sortPrice: 0.50,
+      },
     ],
   },
   {
     label: "Google — Gemini 3",
     models: [
-      { id: "gemini-3.0-pro-preview",       type: "Text", pricing: "$2.00 / $12.00 per 1M tokens (in/out)" },
-      { id: "gemini-3.0-flash-preview",     type: "Text", pricing: "$0.50 / $3.00 per 1M tokens (in/out)"  },
-      { id: "gemini-3.0-pro-image-preview", type: "Text", pricing: "$2.00 / $12.00 per 1M tokens (in/out)"  },
+      {
+        id: "gemini-3.0-pro-image-preview",
+        type: "Text",
+        pricing: "$2.00 / $12.00 per 1M tokens (in/out)",
+        description: "Gemini 3 Pro with native multimodal image output. Powerful model for combining high-quality text and visual reasoning.",
+        useCases: ["Visual content creation", "Multimodal reasoning", "Creative AI"],
+        quality: 3,
+        sortPrice: 2.00,
+      },
+      {
+        id: "gemini-3.0-flash-preview",
+        type: "Text",
+        pricing: "$0.50 / $3.00 per 1M tokens (in/out)",
+        description: "Fast Gemini 3 model designed for production. Offers Gemini 3 generation quality at significantly lower cost.",
+        useCases: ["Production chatbots", "Real-time apps", "Batch processing"],
+        quality: 13,
+        sortPrice: 0.50,
+      },
     ],
   },
   {
     label: "Google — Imagen",
     models: [
-      { id: "imagen-4.0-generate-001",       alias: "imagen-4",       type: "Image", pricing: "$0.04 per image" },
-      { id: "imagen-4.0-ultra-generate-001", alias: "imagen-4-ultra", type: "Image", pricing: "$0.06 per image" },
-      { id: "imagen-3.0-generate-002",       alias: "imagen-3",       type: "Image", pricing: "$0.04 per image" },
-      { id: "imagen-3.0-fast-generate-001",  alias: "imagen-3-fast",  type: "Image", pricing: "$0.02 per image" },
+      {
+        id: "imagen-4.0-generate-001",
+        alias: "imagen-4",
+        type: "Image",
+        pricing: "$0.04 per image",
+        description: "Imagen 4 — Google's latest photorealistic image generation model. Stunning detail, accurate text rendering, and prompt adherence.",
+        useCases: ["Marketing", "Product images", "Creative content"],
+        quality: 2,
+        sortPrice: 0.04,
+      },
+      {
+        id: "imagen-4.0-ultra-generate-001",
+        alias: "imagen-4-ultra",
+        type: "Image",
+        pricing: "$0.06 per image",
+        description: "Imagen 4 Ultra — highest quality image generation available. Premium tier for professional and commercial media production.",
+        useCases: ["Professional media", "Premium advertising", "High-fidelity art"],
+        quality: 1,
+        sortPrice: 0.06,
+      },
+      {
+        id: "imagen-3.0-generate-002",
+        alias: "imagen-3",
+        type: "Image",
+        pricing: "$0.04 per image",
+        description: "Imagen 3 — reliable high-quality image generation. Great balance of quality and cost for standard creative workflows.",
+        useCases: ["Blog images", "Social media", "Product visuals"],
+        quality: 3,
+        sortPrice: 0.04,
+      },
+      {
+        id: "imagen-3.0-fast-generate-001",
+        alias: "imagen-3-fast",
+        type: "Image",
+        pricing: "$0.02 per image",
+        description: "Imagen 3 Fast — quick image generation at the lowest cost. Perfect for high-volume generation and rapid prototyping.",
+        useCases: ["Prototyping", "High-volume generation", "Drafts"],
+        quality: 4,
+        sortPrice: 0.02,
+      },
     ],
   },
   {
     label: "Google — Veo",
     models: [
-      { id: "veo-3.1-generate-001",      alias: "veo-3.1",      type: "Video", pricing: "$0.40 per second" },
-      { id: "veo-3.1-fast-generate-001", alias: "veo-3.1-fast", type: "Video", pricing: "$0.12 per second" },
-      { id: "veo-3.0-generate-001",      alias: "veo-3",        type: "Video", pricing: "$0.40 per second" },
-      { id: "veo-2.0-generate-001",      alias: "veo-2",        type: "Video", pricing: "$0.50 per second" },
+      {
+        id: "veo-3.1-generate-001",
+        alias: "veo-3.1",
+        type: "Video",
+        pricing: "$0.40 per second",
+        description: "Veo 3.1 — Google's best-in-class video generation model with native audio. Cinematic quality short videos from text prompts.",
+        useCases: ["Marketing videos", "Social media", "Product demos"],
+        quality: 1,
+        sortPrice: 0.40,
+      },
+      {
+        id: "veo-3.1-fast-generate-001",
+        alias: "veo-3.1-fast",
+        type: "Video",
+        pricing: "$0.12 per second",
+        description: "Veo 3.1 Fast — faster video generation at a lower cost. Great for previews, drafts, and iterative workflows.",
+        useCases: ["Video drafts", "Storyboards", "Rapid iteration"],
+        quality: 3,
+        sortPrice: 0.12,
+      },
+      {
+        id: "veo-3.0-generate-001",
+        alias: "veo-3",
+        type: "Video",
+        pricing: "$0.40 per second",
+        description: "Veo 3 — high-quality video generation with excellent motion coherence and scene understanding.",
+        useCases: ["Video content", "Creative storytelling", "Animation"],
+        quality: 2,
+        sortPrice: 0.40,
+      },
+      {
+        id: "veo-2.0-generate-001",
+        alias: "veo-2",
+        type: "Video",
+        pricing: "$0.50 per second",
+        description: "Veo 2 — previous generation Veo model. Still capable for standard video generation tasks.",
+        useCases: ["Basic video generation", "Legacy workflows"],
+        quality: 4,
+        sortPrice: 0.50,
+      },
     ],
   },
   {
     label: "xAI — Grok",
     models: [
-      { id: "grok-4.20",         type: "Text", pricing: "$0.20 / $0.50 per 1M tokens (in/out)" },
-      { id: "grok-4.1-thinking", type: "Text", pricing: "$0.20 / $0.50 per 1M tokens (in/out)" },
+      {
+        id: "grok-4.20",
+        type: "Text",
+        pricing: "$0.20 / $0.50 per 1M tokens (in/out)",
+        description: "xAI's flagship model with deep reasoning, real-time knowledge, and strong performance on hard benchmarks.",
+        useCases: ["Research", "Deep analysis", "Complex tasks", "Real-time data"],
+        quality: 2,
+        sortPrice: 0.20,
+      },
+      {
+        id: "grok-4.1-thinking",
+        type: "Text",
+        pricing: "$0.20 / $0.50 per 1M tokens (in/out)",
+        description: "xAI's step-by-step reasoning model. Excels at math, logic, and multi-step problem solving with transparent thinking.",
+        useCases: ["Math", "Logic", "Problem solving", "Scientific reasoning"],
+        quality: 4,
+        sortPrice: 0.20,
+      },
     ],
   },
   {
     label: "DeepSeek",
     models: [
-      { id: "deepseek-v3.2", type: "Text", pricing: "$0.56 / $1.68 per 1M tokens (in/out)" },
+      {
+        id: "deepseek-v3.2",
+        type: "Text",
+        pricing: "$0.56 / $1.68 per 1M tokens (in/out)",
+        description: "DeepSeek's latest model with exceptional coding and technical capabilities. One of the strongest open-weight class models available.",
+        useCases: ["Code generation", "Technical analysis", "Data science"],
+        quality: 8,
+        sortPrice: 0.56,
+      },
     ],
   },
   {
     label: "Google — Gemma MaaS",
     models: [
-      { id: "gemma-4-26b", type: "Text", pricing: "$0.20 / $0.80 per 1M tokens (in/out)" },
+      {
+        id: "gemma-4-26b",
+        type: "Text",
+        pricing: "$0.20 / $0.80 per 1M tokens (in/out)",
+        description: "Google's open Gemma 4 model served via Vertex AI MaaS. Efficient and capable for general-purpose tasks.",
+        useCases: ["General purpose", "Research", "Text processing"],
+        quality: 14,
+        sortPrice: 0.20,
+      },
     ],
   },
   {
     label: "Kimi (Moonshot AI)",
     models: [
-      { id: "kimi-k2", type: "Text", pricing: "$0.60 / $2.50 per 1M tokens (in/out)" },
+      {
+        id: "kimi-k2",
+        type: "Text",
+        pricing: "$0.60 / $2.50 per 1M tokens (in/out)",
+        description: "Moonshot AI's agentic reasoning model. Excellent for complex multi-step tasks and autonomous agent workflows.",
+        useCases: ["AI agents", "Complex reasoning", "Multi-step tasks"],
+        quality: 7,
+        sortPrice: 0.60,
+      },
     ],
   },
   {
     label: "MiniMax",
     models: [
-      { id: "minimax-m2", type: "Text", pricing: "$0.30 / $1.20 per 1M tokens (in/out)" },
+      {
+        id: "minimax-m2",
+        type: "Text",
+        pricing: "$0.30 / $1.20 per 1M tokens (in/out)",
+        description: "MiniMax M2 — strong multilingual model with broad knowledge and creative capabilities.",
+        useCases: ["Multilingual", "Creative writing", "General tasks"],
+        quality: 12,
+        sortPrice: 0.30,
+      },
+    ],
+  },
+  {
+    label: "Zhipu AI — GLM-5",
+    models: [
+      {
+        id: "glm-5",
+        type: "Text",
+        pricing: "$0.10 / $0.40 per 1M tokens (in/out)",
+        description: "Zhipu AI's GLM-5 with exceptional Chinese language support and competitive multilingual performance.",
+        useCases: ["Chinese language", "Multilingual", "General reasoning"],
+        quality: 9,
+        sortPrice: 0.10,
+      },
+    ],
+  },
+  {
+    label: "Mistral AI",
+    models: [
+      {
+        id: "mistral-small",
+        type: "Text",
+        pricing: "$0.20 / $0.60 per 1M tokens (in/out)",
+        description: "Mistral Small 3.1 — a fast, efficient European AI model with strong instruction following and multilingual support.",
+        useCases: ["Chat", "Summarization", "Code", "European data residency"],
+        quality: 16,
+        sortPrice: 0.20,
+      },
     ],
   },
 ];
 
-const MODELS: ModelRow[] = MODEL_SECTIONS.flatMap((s) => s.models);
+const ALL_MODELS: ModelRow[] = MODEL_SECTIONS.flatMap((s) => s.models);
+
+function sortModels(models: ModelRow[], mode: SortMode): ModelRow[] {
+  if (mode === "default") return models;
+  return [...models].sort((a, b) => {
+    if (mode === "quality") return a.quality - b.quality;
+    if (mode === "price-asc") return a.sortPrice - b.sortPrice;
+    if (mode === "price-desc") return b.sortPrice - a.sortPrice;
+    return 0;
+  });
+}
+
+function QualityStars({ quality, total }: { quality: number; total: number }) {
+  const pct = Math.max(0, Math.min(1, 1 - (quality - 1) / (total - 1)));
+  const filled = Math.round(pct * 5);
+  return (
+    <div className="flex gap-0.5">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <div
+          key={i}
+          className={`h-1.5 w-1.5 rounded-full ${i <= filled ? "bg-primary" : "bg-muted"}`}
+        />
+      ))}
+    </div>
+  );
+}
+
+function ModelTableRow({ m, maxQuality, showDescription }: {
+  m: ModelRow;
+  maxQuality: number;
+  showDescription: boolean;
+}) {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <>
+      <tr className="border-t border-border/20 hover:bg-muted/10">
+        <td className="px-4 py-2.5">
+          <ModelIdCell id={m.id} alias={m.alias} />
+        </td>
+        <td className="px-4 py-2.5">
+          <Badge variant="outline" className={
+            m.type === "Text"  ? "text-blue-500 border-blue-500/30 bg-blue-500/5" :
+            m.type === "Image" ? "text-purple-500 border-purple-500/30 bg-purple-500/5" :
+                                 "text-amber-500 border-amber-500/30 bg-amber-500/5"
+          }>{m.type}</Badge>
+        </td>
+        <td className="px-4 py-2.5">
+          <QualityStars quality={m.quality} total={maxQuality} />
+        </td>
+        <td className="px-4 py-2.5 text-muted-foreground text-xs">{m.pricing}</td>
+        <td className="px-4 py-2.5">
+          <button
+            onClick={() => setExpanded((e) => !e)}
+            className="text-muted-foreground hover:text-foreground transition-colors"
+            title={expanded ? "Hide details" : "Show details"}
+          >
+            {expanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+          </button>
+        </td>
+      </tr>
+      {expanded && (
+        <tr className="border-t border-border/10 bg-muted/20">
+          <td colSpan={5} className="px-4 py-3">
+            <p className="text-xs text-foreground/80 mb-2">{m.description}</p>
+            <div className="flex flex-wrap gap-1">
+              {m.useCases.map((uc) => (
+                <span
+                  key={uc}
+                  className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20"
+                >
+                  {uc}
+                </span>
+              ))}
+            </div>
+          </td>
+        </tr>
+      )}
+    </>
+  );
+}
 
 export default function PortalDocs() {
   const { data: apiKeys } = useGetPortalApiKeys();
   const apiKey = apiKeys?.[0]?.fullKey ?? "YOUR_API_KEY";
   const base = GATEWAY_URL;
+
+  const [sortMode, setSortMode] = useState<SortMode>("default");
+
+  const maxQuality = Math.max(...ALL_MODELS.map((m) => m.quality));
+
+  const sortedModels = sortModels(ALL_MODELS, sortMode);
+  const isGrouped = sortMode === "default";
 
   // ── Chat ────────────────────────────────────────────────────────────────────
   const chatCurl = `curl -X POST "${base}/api/v1/chat" \\
@@ -417,7 +723,51 @@ console.log("Video ready:", videoUrl);`;
 
       {/* Models Reference */}
       <div className="space-y-3">
-        <SectionTitle>Available Models</SectionTitle>
+        <div className="flex items-center justify-between">
+          <SectionTitle>Available Models</SectionTitle>
+
+          {/* Sort Controls */}
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-muted-foreground mr-1 hidden sm:inline">Sort:</span>
+            <Button
+              variant={sortMode === "default" ? "default" : "outline"}
+              size="sm"
+              className="h-7 text-xs gap-1"
+              onClick={() => setSortMode("default")}
+            >
+              <ArrowUpDown className="h-3 w-3" />
+              Default
+            </Button>
+            <Button
+              variant={sortMode === "quality" ? "default" : "outline"}
+              size="sm"
+              className="h-7 text-xs gap-1"
+              onClick={() => setSortMode("quality")}
+            >
+              <ArrowUp className="h-3 w-3" />
+              Best first
+            </Button>
+            <Button
+              variant={sortMode === "price-asc" ? "default" : "outline"}
+              size="sm"
+              className="h-7 text-xs gap-1"
+              onClick={() => setSortMode("price-asc")}
+            >
+              <ArrowUp className="h-3 w-3" />
+              Cheapest
+            </Button>
+            <Button
+              variant={sortMode === "price-desc" ? "default" : "outline"}
+              size="sm"
+              className="h-7 text-xs gap-1"
+              onClick={() => setSortMode("price-desc")}
+            >
+              <ArrowDown className="h-3 w-3" />
+              Priciest
+            </Button>
+          </div>
+        </div>
+
         <Card>
           <CardContent className="p-0">
             <table className="w-full text-sm">
@@ -425,39 +775,36 @@ console.log("Video ready:", videoUrl);`;
                 <tr className="border-b border-border/50">
                   <th className="text-left px-4 py-3 font-medium text-muted-foreground">Model ID</th>
                   <th className="text-left px-4 py-3 font-medium text-muted-foreground">Type</th>
+                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">Quality</th>
                   <th className="text-left px-4 py-3 font-medium text-muted-foreground">Pricing (with markup)</th>
+                  <th className="px-4 py-3 w-8"></th>
                 </tr>
               </thead>
               <tbody>
-                {MODEL_SECTIONS.map((section) => (
-                  <Fragment key={section.label}>
-                    <tr className="bg-muted/40 border-t border-border/50">
-                      <td colSpan={3} className="px-4 py-1.5 text-xs font-semibold text-muted-foreground tracking-wide uppercase">
-                        {section.label}
-                      </td>
-                    </tr>
-                    {section.models.map((m) => (
-                      <tr key={m.id} className="border-t border-border/20 hover:bg-muted/10">
-                        <td className="px-4 py-2.5">
-                          <ModelIdCell id={m.id} alias={m.alias} />
+                {isGrouped ? (
+                  MODEL_SECTIONS.map((section) => (
+                    <Fragment key={section.label}>
+                      <tr className="bg-muted/40 border-t border-border/50">
+                        <td colSpan={5} className="px-4 py-1.5 text-xs font-semibold text-muted-foreground tracking-wide uppercase">
+                          {section.label}
                         </td>
-                        <td className="px-4 py-2.5">
-                          <Badge variant="outline" className={
-                            m.type === "Text"  ? "text-blue-500 border-blue-500/30 bg-blue-500/5" :
-                            m.type === "Image" ? "text-purple-500 border-purple-500/30 bg-purple-500/5" :
-                                                 "text-amber-500 border-amber-500/30 bg-amber-500/5"
-                          }>{m.type}</Badge>
-                        </td>
-                        <td className="px-4 py-2.5 text-muted-foreground text-xs">{m.pricing}</td>
                       </tr>
-                    ))}
-                  </Fragment>
-                ))}
+                      {section.models.map((m) => (
+                        <ModelTableRow key={m.id} m={m} maxQuality={maxQuality} showDescription={true} />
+                      ))}
+                    </Fragment>
+                  ))
+                ) : (
+                  sortedModels.map((m) => (
+                    <ModelTableRow key={m.id} m={m} maxQuality={maxQuality} showDescription={true} />
+                  ))
+                )}
               </tbody>
             </table>
           </CardContent>
         </Card>
         <p className="text-xs text-muted-foreground">
+          Click the <ChevronDown className="inline h-3 w-3" /> arrow on any row to see model description and use cases.
           Model availability depends on your plan. Check the <strong>Plans</strong> page for details.
         </p>
       </div>
@@ -599,9 +946,9 @@ console.log("Video ready:", videoUrl);`;
                   <table className="w-full text-xs">
                     <tbody className="divide-y divide-border/30">
                       {[
-                        ["model", "string", "Required", "Veo model ID"],
+                        ["model", "string", "Required", "Veo model ID (e.g. veo-3.1)"],
                         ["prompt", "string", "Required", "Video description"],
-                        ["durationSeconds", "number", "Optional", "Duration 5–8s, default 5"],
+                        ["durationSeconds", "number", "Optional", "Length in seconds (default 5)"],
                       ].map(([name, type, req, desc]) => (
                         <tr key={name}>
                           <td className="py-1.5 pr-2 font-mono text-primary">{name}</td>
@@ -614,17 +961,17 @@ console.log("Video ready:", videoUrl);`;
                   </table>
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-muted-foreground mb-1">Step 2 — GET /api/v1/video/{"{jobId}"}</p>
-                  <p className="text-xs text-muted-foreground">Poll every 5–10 seconds until <code className="bg-muted px-1 py-0.5 rounded">status</code> is <code className="bg-muted px-1 py-0.5 rounded">completed</code> or <code className="bg-muted px-1 py-0.5 rounded">error</code>.</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Step 2 — GET /api/v1/video/:jobId</p>
+                  <p className="text-xs text-muted-foreground">Poll this endpoint every 5–10 seconds until <code className="bg-muted px-1 rounded">status</code> is <code className="bg-muted px-1 rounded">completed</code> or <code className="bg-muted px-1 rounded">error</code>.</p>
                 </div>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <div>
-                  <p className="text-xs font-medium text-muted-foreground mb-1">Start Response (202)</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Start response</p>
                   <CodeBlock code={videoStartResponse} />
                 </div>
                 <div>
-                  <p className="text-xs font-medium text-muted-foreground mb-1">Poll Response</p>
+                  <p className="text-xs font-medium text-muted-foreground mb-1">Poll response (done)</p>
                   <CodeBlock code={videoPollResponse} />
                 </div>
               </div>
@@ -641,119 +988,6 @@ console.log("Video ready:", videoUrl);`;
                 <TabsContent value="python" className="m-0"><CodeBlock code={videoPython} /></TabsContent>
                 <TabsContent value="javascript" className="m-0"><CodeBlock code={videoJs} /></TabsContent>
               </Tabs>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Error Codes */}
-      <div className="space-y-3">
-        <SectionTitle>Error Codes</SectionTitle>
-        <Card>
-          <CardContent className="p-0">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border/50">
-                  <th className="text-left px-4 py-3 font-medium text-muted-foreground w-20">Code</th>
-                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">Meaning</th>
-                  <th className="text-left px-4 py-3 font-medium text-muted-foreground">Fix</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/20">
-                {[
-                  ["400", "Policy Violation", "Request blocked by content safety filters — review the Acceptable Use Policy"],
-                  ["401", "Unauthorized", "Invalid or missing API key"],
-                  ["402", "Payment Required", "Insufficient credit balance — top up your account"],
-                  ["403", "Forbidden", "Model not allowed on your plan, or account suspended due to policy violations"],
-                  ["429", "Too Many Requests", "Rate limit exceeded — slow down or upgrade your plan"],
-                  ["502", "Bad Gateway", "Vertex AI returned an error — check prompt or try again"],
-                ].map(([code, meaning, fix]) => (
-                  <tr key={code}>
-                    <td className="px-4 py-2.5 font-mono text-xs font-semibold text-destructive">{code}</td>
-                    <td className="px-4 py-2.5 text-sm">{meaning}</td>
-                    <td className="px-4 py-2.5 text-sm text-muted-foreground">{fix}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Acceptable Use Policy */}
-      <div className="space-y-3">
-        <SectionTitle>Acceptable Use Policy</SectionTitle>
-        <Card className="border-amber-500/30">
-          <CardHeader className="pb-3">
-            <div className="flex items-center gap-2">
-              <ShieldAlert className="h-5 w-5 text-amber-500" />
-              <CardTitle className="text-base text-amber-600">Important — Read Before Using</CardTitle>
-            </div>
-            <p className="text-sm text-muted-foreground mt-1">
-              By using this API you agree to these terms. Violations are automatically detected, <strong>permanently logged</strong>, and used as legal evidence.
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Prohibited */}
-            <div className="rounded-lg bg-destructive/5 border border-destructive/20 p-4 space-y-2">
-              <div className="flex items-center gap-2 mb-2">
-                <Ban className="h-4 w-4 text-destructive" />
-                <p className="text-sm font-semibold text-destructive">Strictly Prohibited</p>
-              </div>
-              <ul className="space-y-1.5 text-sm text-muted-foreground">
-                {[
-                  "Creating or distributing malware, ransomware, viruses, or any harmful software",
-                  "Hacking, unauthorized access, SQL injection, DDoS attacks, or cyberattacks of any kind",
-                  "Generating sexual content involving minors (CSAM) — zero tolerance, reported to authorities",
-                  "Instructions for creating weapons, explosives, or dangerous chemical substances",
-                  "Promoting terrorism, violent extremism, or incitement to violence",
-                  "Fraud, scams, identity theft, forgery, or financial crimes",
-                  "Attempting to bypass or jailbreak safety filters",
-                ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-2">
-                    <span className="text-destructive mt-0.5 shrink-0">✗</span>
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Warning system */}
-            <div className="rounded-lg bg-amber-500/5 border border-amber-500/20 p-4 space-y-3">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-amber-500" />
-                <p className="text-sm font-semibold text-amber-600">Enforcement — 3-Strike System</p>
-              </div>
-              <div className="grid grid-cols-3 gap-3 text-center text-xs">
-                <div className="rounded-md bg-amber-500/10 border border-amber-500/20 p-3">
-                  <p className="text-2xl font-bold text-amber-500">1</p>
-                  <p className="font-medium mt-1">First Violation</p>
-                  <p className="text-muted-foreground mt-0.5">Warning issued. Request logged and stored.</p>
-                </div>
-                <div className="rounded-md bg-orange-500/10 border border-orange-500/20 p-3">
-                  <p className="text-2xl font-bold text-orange-500">2</p>
-                  <p className="font-medium mt-1">Second Violation</p>
-                  <p className="text-muted-foreground mt-0.5">Final warning. One strike remaining.</p>
-                </div>
-                <div className="rounded-md bg-destructive/10 border border-destructive/20 p-3">
-                  <p className="text-2xl font-bold text-destructive">3</p>
-                  <p className="font-medium mt-1">Account Suspended</p>
-                  <p className="text-muted-foreground mt-0.5">Permanent ban. No refund issued.</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Evidence logging */}
-            <div className="rounded-lg bg-muted/50 border p-4 space-y-2">
-              <div className="flex items-center gap-2">
-                <FileWarning className="h-4 w-4 text-primary" />
-                <p className="text-sm font-semibold">Evidence Retention</p>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Every blocked request is <strong>permanently stored</strong> in our system with the full message content, timestamp,
-                IP address, and account details. This evidence is retained to prevent false claims and ensure accountability.
-                By using this service you explicitly consent to this logging.
-              </p>
             </div>
           </CardContent>
         </Card>
